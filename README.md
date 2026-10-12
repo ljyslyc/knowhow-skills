@@ -27,6 +27,16 @@
 
 脚本只做复制，**不联网、不执行下载、不修改任何已有技能**；同名技能默认跳过，需覆盖时加 `--force`。
 
+### 依赖
+
+套件本体零依赖——`multi-search-engine` 只用 Python 标准库；`hv-analysis` 的 PDF 导出脚本是**可选**能力，不用它就不需要装任何东西。
+
+| 能力 | 依赖 | 安装 |
+|---|---|---|
+| Markdown → PDF（`hv-analysis/scripts/md_to_pdf.py`） | `markdown`、`weasyprint` | `pip install markdown weasyprint` |
+
+`weasyprint` 在 macOS 上还需系统级 `pango` 等库（`brew install pango`）；缺失时脚本会报 `ModuleNotFoundError`，只影响 PDF 导出，不影响报告正文生成。
+
 ## 典型用法
 
 | 你想做的事 | 这样说 |
@@ -57,7 +67,7 @@ knowhow-skills/
 ├── install.sh
 ├── README.md
 ├── CHANGELOG.md
-├── LICENSE
+├── LICENSE.upstream-khazix
 ├── docs/
 │   └── OPTIMIZATION.md      # 周期性优化机制与指标
 └── skills/
