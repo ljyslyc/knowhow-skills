@@ -1,0 +1,61 @@
+{
+  "name": "multi-search-engine",
+  "version": "4.0.0",
+  "description": "Cross-engine web search over 38 engines across 7 categories. No API keys required.",
+  "categories": {
+    "cn_general": "中文综合",
+    "global_general": "国际综合",
+    "academic": "学术与文献",
+    "tech": "技术社区",
+    "cn_community": "中文社区",
+    "news": "新闻资讯",
+    "special": "专用与事实"
+  },
+  "engines": [
+    {"name": "Baidu", "url": "https://www.baidu.com/s?wd={keyword}", "region": "cn", "category": "cn_general"},
+    {"name": "Bing CN", "url": "https://cn.bing.com/search?q={keyword}&ensearch=0", "region": "cn", "category": "cn_general"},
+    {"name": "Bing INT", "url": "https://cn.bing.com/search?q={keyword}&ensearch=1", "region": "cn", "category": "cn_general"},
+    {"name": "360", "url": "https://www.so.com/s?q={keyword}", "region": "cn", "category": "cn_general"},
+    {"name": "Sogou", "url": "https://sogou.com/web?query={keyword}", "region": "cn", "category": "cn_general"},
+    {"name": "Shenma", "url": "https://m.sm.cn/s?q={keyword}", "region": "cn", "category": "cn_general"},
+    {"name": "Toutiao", "url": "https://so.toutiao.com/search?keyword={keyword}", "region": "cn", "category": "cn_general"},
+    {"name": "Quark", "url": "https://quark.sm.cn/s?q={keyword}", "region": "cn", "category": "cn_general"},
+
+    {"name": "Google", "url": "https://www.google.com/search?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Google HK", "url": "https://www.google.com.hk/search?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "DuckDuckGo", "url": "https://duckduckgo.com/html/?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Yahoo", "url": "https://search.yahoo.com/search?p={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Startpage", "url": "https://www.startpage.com/sp/search?query={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Brave", "url": "https://search.brave.com/search?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Ecosia", "url": "https://www.ecosia.org/search?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Qwant", "url": "https://www.qwant.com/?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Mojeek", "url": "https://www.mojeek.com/search?q={keyword}", "region": "global", "category": "global_general"},
+    {"name": "Marginalia", "url": "https://search.marginalia.nu/search?query={keyword}", "region": "global", "category": "global_general"},
+
+    {"name": "Google Scholar", "url": "https://scholar.google.com/scholar?q={keyword}", "region": "global", "category": "academic"},
+    {"name": "arXiv", "url": "https://arxiv.org/search/?query={keyword}&searchtype=all", "region": "global", "category": "academic"},
+    {"name": "Semantic Scholar", "url": "https://www.semanticscholar.org/search?q={keyword}", "region": "global", "category": "academic"},
+    {"name": "PubMed", "url": "https://pubmed.ncbi.nlm.nih.gov/?term={keyword}", "region": "global", "category": "academic"},
+    {"name": "CNKI", "url": "https://kns.cnki.net/kns8s/defaultresult/index?kw={keyword}", "region": "cn", "category": "academic"},
+    {"name": "Wikipedia ZH", "url": "https://zh.wikipedia.org/w/index.php?search={keyword}", "region": "global", "category": "academic"},
+    {"name": "Wikipedia EN", "url": "https://en.wikipedia.org/w/index.php?search={keyword}", "region": "global", "category": "academic"},
+
+    {"name": "GitHub", "url": "https://github.com/search?q={keyword}&type=repositories", "region": "global", "category": "tech"},
+    {"name": "Stack Overflow", "url": "https://stackoverflow.com/search?q={keyword}", "region": "global", "category": "tech"},
+    {"name": "Hacker News", "url": "https://hn.algolia.com/?q={keyword}", "region": "global", "category": "tech"},
+    {"name": "DEV Community", "url": "https://dev.to/search?q={keyword}", "region": "global", "category": "tech"},
+
+    {"name": "Zhihu", "url": "https://www.zhihu.com/search?type=content&q={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "WeChat", "url": "https://wx.sogou.com/weixin?type=2&query={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "Weibo", "url": "https://s.weibo.com/weibo?q={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "Bilibili", "url": "https://search.bilibili.com/all?keyword={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "Juejin", "url": "https://juejin.cn/search?query={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "CSDN", "url": "https://so.csdn.net/so/search?q={keyword}", "region": "cn", "category": "cn_community"},
+    {"name": "Xiaohongshu", "url": "https://www.xiaohongshu.com/search_result?keyword={keyword}", "region": "cn", "category": "cn_community"},
+
+    {"name": "Google News", "url": "https://news.google.com/search?q={keyword}", "region": "global", "category": "news"},
+    {"name": "Bing News", "url": "https://www.bing.com/news/search?q={keyword}", "region": "global", "category": "news"},
+
+    {"name": "WolframAlpha", "url": "https://www.wolframalpha.com/input?i={keyword}", "region": "global", "category": "special"}
+  ]
+}
