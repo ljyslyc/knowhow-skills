@@ -1,6 +1,8 @@
-# Claude / Codex 路径、加载和体量速查
+# Agent 平台路径、加载和体量速查
 
 平台机制会变。先探测当前环境和本机规则；涉及写入或尺寸上限时，优先核对当前官方文档或本机工具输出，不把这张表当永远不变的事实。
+
+这张表覆盖 Claude Code、OpenAI Codex、WorkBuddy 和 OpenClaw 四个已实测的平台，其余走文末的通用探测法。**表里没有的平台不要靠猜补全路径**——用通用探测法实地找。
 
 ## 通用原则
 
@@ -46,14 +48,48 @@
 
 发现 `TEAM_GUIDE.md`、`.agents.md` 等文件时，只有它们出现在 Codex fallback 配置中才把它们当指令文件。
 
+## WorkBuddy
+
+| 用途 | 常见路径 / 规则 |
+|---|---|
+| 用户级 Skills | `~/.workbuddy/skills/<name>/SKILL.md` |
+| 项目级 Skills | `<项目>/.workbuddy/skills/<name>/SKILL.md` |
+| 用户级 MCP 配置 | `~/.workbuddy/mcp.json`（注意：不是 `~/.workbuddy/.mcp.json`） |
+| 用户级长期记忆 | `~/.workbuddy/user-<id>-personal/MEMORY.md` |
+| 项目记忆目录 | `<项目>/.workbuddy/memory/` |
+| 项目记忆日志 | `<项目>/.workbuddy/memory/YYYY-MM-DD.md`（按日追加，不覆盖） |
+| 项目长期记忆 | `<项目>/.workbuddy/memory/MEMORY.md` |
+| 规则文件 | 平台暂无原生 CLAUDE.md 等价物；项目根 `AGENTS.md` 作为跨平台事实标准被读取 |
+
+当前口径：
+
+- `.workbuddy/` 存项目数据，**不是临时缓存**，收尾时不要当作残留清理。
+- 项目记忆分两档：日档 `YYYY-MM-DD.md` 只追加，长期档 `MEMORY.md` 原地编辑并受字符上限约束（当前约 3,000 字符/会话）。
+- 用户级 `MEMORY.md` 是显式写入的精确规则，上限约 4,000 字符/会话；云侧自动注入的画像缓存由服务端管理，**本地不要改写**（下次会话会被覆盖）。
+- Skills 分两级：用户级对所有项目生效，项目级仅当前项目。装 skill 默认用户级，除非用户明确要项目级。
+
+## OpenClaw
+
+| 用途 | 常见路径 / 规则 |
+|---|---|
+| 工作区 Skills | `~/.openclaw/workspace/skills/<name>/SKILL.md` |
+| 规则文件 | 工作区 `AGENTS.md`（沿用 Codex 约定） |
+| Skill 元数据 | SKILL.md frontmatter 的 `metadata.openclaw` 块（如 `emoji`）供 OpenClaw 界面读取 |
+
+当前口径：
+
+- OpenClaw 的联网能力取决于插件：启用浏览器插件时有 `browser` 工具，否则用 `exec` 跑 shell（`curl`）。写 skill 时**不要假设两者中哪一个一定存在**，按实际可见的工具选。
+- 分发走 ClawHub 或直接放工作区 skills 目录；同一 skill 可能同时装在多个宿主，收尾时按「共存检查」核对是否软链到同一真身。
+
 ## 其他 Agent Skills 平台（Qoder、Kimi Code、iFlow、CodeBuddy、Cursor、Gemini CLI 等）
 
-Agent Skills 是开放标准（2025-12 由 Anthropic 开放），已有约 40 个产品兼容本 skill 的分发格式。Claude Code 和 Codex 之外的平台不逐一维护速查表，用通用探测法：
+Agent Skills 是开放标准（2025-12 由 Anthropic 开放），已有约 40 个产品兼容本 skill 的分发格式。上表之外的平台不逐一维护速查表，用通用探测法：
 
 1. **规则文件**：在项目根和上级目录找 `AGENTS.md`（跨平台事实标准）、`CLAUDE.md`，以及平台专属形态（如 `.cursor/rules/`、`.cursorrules`、平台设置里的项目指令）。哪份实际被加载，以当前平台文档和诊断入口为准，不猜。
-2. **三分法归类**：把发现的每个知识文件归入三类之一——人工维护的规则、Agent 自动记忆、机器生成的历史/索引。归类不明时按机器生成处理（最保守）。
-3. **记忆边界**：未知平台的记忆机制找不到官方控制面时默认只读；不把任何其他平台的尺寸阈值或写入规则套过来。
-4. **降级用法**：宿主不支持 Agent Skills 时本 skill 仍可用——把 SKILL.md 全文作为规则文件或对话指令交给 Agent，references 内容按需跟进；执行边界不变。
+2. **Skills 与配置目录**：找平台自己的点目录（`.cursor/`、`.gemini/`、`.codex/` 等）。**探测优先于假设**——`scripts/audit-inventory.sh` 已经会依次检查 `$HOME` 下的 `.claude`、`.codex`、`.cursor`、`.gemini`、`.workbuddy`、`.openclaw`，先跑它，再看实际命中哪些。
+3. **三分法归类**：把发现的每个知识文件归入三类之一——人工维护的规则、Agent 自动记忆、机器生成的历史/索引。归类不明时按机器生成处理（最保守）。
+4. **记忆边界**：未知平台的记忆机制找不到官方控制面时默认只读；不把任何其他平台的尺寸阈值或写入规则套过来。
+5. **降级用法**：宿主不支持 Agent Skills 时本 skill 仍可用——把 SKILL.md 全文作为规则文件或对话指令交给 Agent，references 内容按需跟进；执行边界不变。
 
 ## 共存检查
 

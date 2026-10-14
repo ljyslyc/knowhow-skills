@@ -1,13 +1,22 @@
 ---
 name: multi-search-engine
-description: Cross-engine web search over 39 engines in 7 categories (Chinese general, global general, academic, tech, Chinese community, news, special) with no API keys, plus 8 scenario presets. Use when one engine is not enough, or when research needs broad multi-source coverage.
+description: |
+  Cross-engine web search over 39 engines in 7 categories (Chinese general, global general,
+  academic, tech, Chinese community, news, special) with no API keys, plus 8 scenario presets.
+  Use when one engine is not enough, or when research needs broad multi-source coverage.
+  Also provides a three-layer research pipeline: generate keyword plans by investigation
+  direction (L1), fan out across many engines (L2), then extract named-entity leads from the
+  fetched text and build targeted follow-up queries (L3).
+  Triggers: 多引擎搜索 / 搜得全一点 / 多个来源交叉验证 / 帮我查一下 XX 的情况 / 做调研 /
+  competitor scan — whenever a single search would leave gaps.
+  Not for: a single fact lookup where one engine obviously suffices.
 license: MIT
-version: 4.0.0
+version: 4.1.0
 compatibility: Requires an HTTP fetch capability. Works with any agent-provided web-fetch tool, shell curl/wget, or python3 3.8+ via the bundled fallback script.
 allowed-tools: web_fetch WebFetch fetch browser exec
-description_zh: "集成 39 个搜索引擎（7 大类），无 API Key，内置 8 组场景预设，多源结果合并去重"
+description_zh: "集成 39 个搜索引擎（7 大类），无 API Key，内置 8 组场景预设，三层层级检索（关键词规划→多引擎扇出→线索深挖）"
 visibility: "public"
-metadata: { "author": "ljy", "version": "4.0.0", "openclaw": { "emoji": "🔎" } }
+metadata: { "author": "ljy", "version": "4.1.0", "openclaw": { "emoji": "🔎" } }
 agent_created: true
 ---
 
@@ -51,6 +60,62 @@ single fetch, multi-engine fan-out, category/preset selection, rate limiting, co
 5. **Aggregate.** De-duplicate by URL, group results by engine, rank the strongest sources
    first. State which engines responded and which did not — never present partial coverage
    as complete.
+
+## Layered research (three rounds, not one)
+
+The single-round workflow above answers "what does the web say about X". For research that has
+to be *complete* — competitor scans, due diligence, literature reviews — one round leaves gaps,
+because you cannot know the useful keyword until you have seen what comes back. `layered_search.py`
+implements a three-round pipeline mirroring how a human analyst actually works:
+
+| Layer | What it does | Command |
+| --- | --- | --- |
+| **L1 PLAN** | Expands a topic into keyword sets grouped by **investigation direction** (product, patent, market, capacity, strategy, timeline, competitor, community, risk). Which directions turn on depends on a **profile** auto-detected from the topic (company / industry / tech / person / concept / product). | `plan` |
+| **L2 FANOUT** | Runs every keyword set across several engines, concurrently, and stores the fetched page text. | `fanout` / `run` |
+| **L3 DRILL** | Extracts **named-entity leads** (company names, patent numbers, people) from the L2 text, ranks them by cross-engine agreement, then generates targeted follow-up queries per lead — e.g. `<lead> 专利 布局`, `<lead> 产能 扩产`. | `leads` / `drill` |
+
+The point of L3 is that round two is *data-driven*: you drill on the entities that actually
+appeared in round one, instead of guessing a second keyword set in the dark.
+
+### Quick start
+
+```bash
+# L1 only — see the plan before spending any network calls
+python3 scripts/layered_search.py plan --topic "饲用酶制剂行业"
+
+# L1 + L2 + L3 in one shot
+python3 scripts/layered_search.py run \
+    --topic "赢创工业集团" --profile company --comparison \
+    --max-directions 4 --engines-per-direction 3 --out /tmp/l2.json
+
+# Or run the layers separately, reusing the saved L2 output
+python3 scripts/layered_search.py leads --in /tmp/l2.json --top 15
+python3 scripts/layered_search.py drill --in /tmp/l2.json --intents patent,product
+```
+
+| Flag | Meaning |
+| --- | --- |
+| `--profile` | `company` / `industry` / `tech` / `person` / `concept` / `product`. Omit to auto-detect from the topic text. |
+| `--max-directions` | How many directions to activate, in profile priority order. Keep at 3-4 for a first pass. |
+| `--engines-per-direction` | Engines per direction. 2-3 is the sweet spot; more adds latency, not much coverage. |
+| `--comparison` | Mixes in comparison-oriented keywords (对比 我方 / 行业地位 / 竞争威胁) for competitive analysis. |
+| `--intents` | Drill intent set: `patent, standard, financial, person, product, capacity, cooperation, verify`. |
+
+### Lead quality
+
+Leads are extracted with regex plus frequency, so every lead is **auditable** — you can see why
+it surfaced. Chinese matches are stripped of leading noise words and rejected if the stem is a
+descriptor rather than a name (`上市公司`, `海外龙头公司`, `蛋氨酸公司`, `一些新兴的生物科技公司`);
+Latin tokens are rejected if they look like web/CSS tokens. Ranking prefers **cross-engine
+agreement** first (a name on several engines is a real entity), then match-type confidence.
+
+The filter lists are curated and meant to grow: when a run surfaces a category word masquerading
+as a company, add it to `LEAD_CATEGORY_STEMS` in `layered_search.py` and pin it with a test case
+in `test_layered_search.py`.
+
+```bash
+python3 scripts/test_layered_search.py   # 71 deterministic checks, no network needed
+```
 
 ## Presets (start here)
 

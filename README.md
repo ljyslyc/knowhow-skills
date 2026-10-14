@@ -7,12 +7,14 @@
 
 | 环节 | 技能 | 解决的问题 |
 |---|---|---|
-| **入口 · 搜得宽** | `multi-search-engine` | 39 个引擎、7 大类，零 API Key，按场景预设一键扇出 |
+| **入口 · 搜得宽** | `multi-search-engine` | 39 个引擎、7 大类，零 API Key；**三层层级检索**：按方向生成关键词 → 多引擎扇出 → 抽取线索深挖 |
 | **研究 · 研得深** | `hv-analysis` | 横纵分析法：纵轴追历程、横轴比同类，产出长篇 PDF 研究报告 |
 | **写作 · 写得像人** | `khazix-writer` | 公众号长文写作，四层自检压掉"AI 味" |
 | **目标 · 拆得清** | `leader` | 把一句话想法拆成 agent 能独立跑完的任务书 |
 | **收尾 · 收得干净** | `neat-freak` | 对齐文档 / 规则文件 / 记忆与实际代码 |
 | **资讯 · 查得快** | `aihot` | 实时查询中文 AI 资讯，不凭训练记忆答新闻 |
+
+**各技能怎么串起来、交接什么、换到别的 agent 上怎么直接用**——见 [docs/WORKFLOW.md](docs/WORKFLOW.md)。这是给接手套件的 agent 看的编排层文档，含全局流程图、逐个交接契约（触发/输入/输出/上下游）和常见组合路径。
 
 ## 安装
 
@@ -60,6 +62,28 @@ python3 skills/multi-search-engine/scripts/fetch_search.py multi \
   --query "饲用酶制剂 竞争格局" --preset competitor --json
 ```
 
+### 分层检索
+
+一次搜索不可能搜全——关键字对不对，得先看第一轮搜回来什么才知道。所以 v4.1 加了
+**三层层级检索**：按「调查方向」自动铺开关键词 → 多引擎并发抓取 → 从正文里抽出公司名、
+专利号等实体，据此生成定向追查词。第二轮的深挖是**数据驱动**的，不是凭感觉猜第二组关键词。
+
+```bash
+# 只看计划，不花网络调用
+python3 skills/multi-search-engine/scripts/layered_search.py plan --topic "饲用酶制剂行业"
+
+# 一次跑完三层
+python3 skills/multi-search-engine/scripts/layered_search.py run \
+  --topic "赢创工业集团" --profile company --comparison \
+  --max-directions 4 --engines-per-direction 3 --out /tmp/l2.json
+
+# 复用已抓到的结果，不重跑网络
+python3 skills/multi-search-engine/scripts/layered_search.py drill --in /tmp/l2.json --intents patent,product
+
+# 71 条确定性测试，不需要网络
+python3 skills/multi-search-engine/scripts/test_layered_search.py
+```
+
 ## 目录结构
 
 ```
@@ -69,9 +93,11 @@ knowhow-skills/
 ├── CHANGELOG.md
 ├── LICENSE.upstream-khazix
 ├── docs/
-│   └── OPTIMIZATION.md      # 周期性优化机制与指标
+│   ├── WORKFLOW.md          # 各技能的交接契约、编排关系、迁移规则（接手套件先看这份）
+│   ├── OPTIMIZATION.md      # 周期性优化机制与指标
+│   └── content-harvester-design.md  # 规划中的「存得住」环节设计方案（v0.1，未实现）
 └── skills/
-    ├── multi-search-engine/ # 搜索层（v4，39 引擎）
+    ├── multi-search-engine/ # 搜索层（v4.1，39 引擎 + 三层层级检索）
     ├── hv-analysis/         # 深度研究
     ├── khazix-writer/       # 长文写作
     ├── leader/              # 目标拆解
